@@ -1,0 +1,5 @@
+Charge_Tier,Total_Customers,Churn_Count,Churn_Rate_Percentage
+"Low ($0-$30)",3306,324,9.80
+"Medium ($30-$70)",3598,866,24.07
+"High ($70-$100)",5366,2034,37.91
+"Very High ($100+)",1816,514,28.30

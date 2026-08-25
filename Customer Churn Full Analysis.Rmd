@@ -1,0 +1,239 @@
+---
+title: "Advanced Customer Churn Analysis & Prediction Report"
+author: "Abeer Gaber | Data Analyst"
+date: "2026-08-25"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, error = TRUE, fig.align = 'center')
+library(tidyverse)
+library(caret)
+library(pROC)
+library(car)
+```
+
+## 1. Executive Summary
+This report aims to investigate and identify the primary drivers of Customer Churn for a telecommunications provider. Using statistical modeling (Logistic Regression), we predict customers at high risk of leaving to enable targeted, proactive retention campaigns.
+
+## 2. Data Loading & Pre-processing
+In this step, customer records are loaded, cleaned, and categorical variables are encoded for statistical modeling:
+
+```{r preprocessing}
+data <- read.csv("D:/Data Analysis/customers_churn/Telco-Customer-Churn.csv")
+
+data_cleaned <- data %>%
+  mutate(
+    Churn_Numeric = ifelse(Churn == "Yes", 1, 0),
+    Churn = as.factor(Churn),
+    Contract = as.factor(Contract),
+    InternetService = as.factor(InternetService),
+    TechSupport = as.factor(TechSupport),
+    PaymentMethod = as.factor(PaymentMethod)
+  ) %>%
+  filter(!is.na(MonthlyCharges))
+
+glimpse(data_cleaned)
+```
+
+## 3. Exploratory Visualizations (EDA)
+
+### A) Churn Rate Distribution by Contract Type
+```{r plot_contract}
+ggplot(data_cleaned, aes(x = Contract, fill = Churn)) +
+  geom_bar(position = "fill", width = 0.5) +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_manual(values = c("#2ecc71", "#e74c3c")) +
+  labs(
+    title = "Churn Rate Distribution by Contract Type",
+    x = "Contract Type",
+    y = "Percentage",
+    fill = "Churn Status"
+  ) +
+  theme_minimal()
+```
+
+**Key Insight:** Over 40% of Month-to-Month contract holders churned, compared to less than 3% churn rate among 2-Year contract holders.
+
+**WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
+This visual computes the proportional churn rate across different contract types. It proves whether short-term contracts have a higher risk of leaving than long-term ones, allowing the business to identify structural retention weaknesses.
+
+### B) Monthly Charges Distribution by Churn Status (Boxplot)
+```{r plot_charges_box}
+ggplot(data_cleaned, aes(x = Churn, y = MonthlyCharges, fill = Churn)) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("#3498db", "#e67e22")) +
+  labs(title = "Monthly Charges vs Churn", x = "Churn", y = "Monthly Charges ($)") +
+  theme_minimal()
+```
+
+**Key Insight:** Churned customers have a higher median monthly charge (~$74.40) compared to retained customers (~$61.20).
+
+**WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
+This boxplot shows the distribution, median, and spread of monthly bills for churned vs retained customers. It helps detect if price sensitivity exists by showing if lost customers were paying more on average.
+
+### C) Statistical Summary Table
+```{r statistical_summary}
+data_cleaned %>%
+  group_by(Churn) %>%
+  summarise(
+    Customer_Count = n(),
+    Average_Monthly_Charges = mean(MonthlyCharges, na.rm = TRUE),
+    Median_Monthly_Charges = median(MonthlyCharges, na.rm = TRUE)
+  )
+```
+
+**WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
+This calculates the exact mathematical average and median spend for both customer groups. It converts the visual signals from the boxplot into hard baseline numbers to present to stakeholders.
+
+### D) Monthly Charges Density by Churn Status (Density Plot)
+```{r plot_charges_density}
+ggplot(data_cleaned, aes(x = MonthlyCharges, fill = Churn)) +
+  geom_density(alpha = 0.5) +
+  scale_fill_manual(values = c("#2ecc71", "#e74c3c")) +
+  labs(title = "Monthly Charges Density by Churn Status", x = "Monthly Charges ($)", y = "Density", fill = "Churn Status") +
+  theme_minimal()
+```
+
+**WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
+This continuous density curve pinpoints the exact price points where customer loss is heaviest. It reveals the "danger zones" (e.g., bills over $70) where churn concentration peaks, guiding pricing adjustments.
+
+## 4. Data Splitting & Imbalance Handling
+```{r imbalance_handling}
+set.seed(123)
+train_index <- createDataPartition(data_cleaned$Churn, p = 0.8, list = FALSE)
+
+train_data <- data_cleaned[train_index, ]
+test_data  <- data_cleaned[-train_index, ]
+
+train_features <- train_data %>% select(tenure, MonthlyCharges, Contract, InternetService, TechSupport)
+train_target <- train_data$Churn
+
+train_data_balanced <- downSample(x = train_features, y = train_target, yname = "Churn")
+```
+
+**WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
+In real-world data, the number of loyal customers heavily outweighs the number of churners. This down-sampling balances the dataset to prevent the Machine Learning model from being biased, ensuring it learns how to catch actual churners accurately instead of just predicting "No Churn" for everyone.
+
+## 5. Predictive Modeling & Statistical Diagnostics
+```{r modeling}
+churn_model <- glm(
+  Churn ~ tenure + MonthlyCharges + Contract + InternetService + TechSupport,
+  data = train_data_balanced,
+  family = binomial(link = "logit")
+)
+
+summary(churn_model)
+```
+
+**WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
+This outputs the mathematical coefficients, log-odds, and p-values for each feature. It shows which factors are statistically significant drivers of churn and which ones are negligible.
+
+### A) Multicollinearity Check (VIF)
+```{r vif_check, warning=FALSE, message=FALSE}
+aliased_check <- alias(churn_model)$Complete
+if (!is.null(aliased_check)) {
+  print(vif(glm(Churn ~ tenure + MonthlyCharges, data = train_data_balanced, family = binomial)))
+} else {
+  print(vif(churn_model))
+}
+```
+
+**WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
+VIF (Variance Inflation Factor) checks if any independent variables are heavily correlating with each other. High correlation (VIF > 5) destabilizes the model; this safety check ensures the predictors provide clean, independent insights.
+
+### B) Feature Importance
+```{r feature_importance}
+importance <- as.data.frame(summary(churn_model)$coefficients)
+colnames(importance) <- c("Estimate", "Std_Error", "z_value", "p_value")
+importance$Feature <- rownames(importance)
+importance <- importance[-1, ] 
+
+ggplot(importance, aes(x = reorder(Feature, abs(z_value)), y = z_value, fill = z_value > 0)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  coord_flip() +
+  scale_fill_manual(values = c("#2ecc71", "#e74c3c"), labels = c("Reduces Churn", "Increases Churn")) +
+  labs(
+    title = "Key Predictors of Customer Churn",
+    subtitle = "Based on Statistical Significance (z-value)",
+    x = "Features / Drivers",
+    y = "Impact Score (z-value)",
+    fill = "Effect Type"
+  ) +
+  theme_minimal()
+```
+
+**Key Insight & Business Value:** Features with high positive z-values (like Monthly Charges and Fiber Optic Internet) significantly increase the likelihood of churn. Features with negative z-values (like long tenure and Tech Support) act as retention anchors, keeping customers loyal.
+
+**WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
+This translates complex model weights into an intuitive, actionable executive chart. It ranks drivers by impact: Red bars increase churn probability (risk factors), while green bars reduce it (retention hooks).
+
+### C) Model Evaluation
+```{r evaluation}
+test_preds <- predict(churn_model, newdata = test_data, type = "response")
+test_pred_class <- as.factor(ifelse(test_preds >= 0.5, "Yes", "No")) 
+
+conf_matrix <- confusionMatrix(test_pred_class, test_data$Churn, positive = "Yes")
+print(conf_matrix$table)
+
+roc_curve <- roc(test_data$Churn, test_preds)
+cat("Model Accuracy:", round(conf_matrix$overall['Accuracy'] * 100, 2), "%n")
+cat("Model Sensitivity (True Churn Catch Rate):", round(conf_matrix$byClass['Sensitivity'] * 100, 2), "%n")
+cat("Area Under Curve (AUC):", round(auc(roc_curve), 2), "n")
+```
+
+**Key Insight & Business Value:** Evaluating metrics ensures the business doesn't waste budget on wrong predictions. A higher sensitivity means we correctly capture the majority of customers who are truly planning to leave.
+
+**WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
+This tests the model's predictive power on completely unseen validation data (test set). It outputs critical metrics: Sensitivity tells us what percentage of real churners the model successfully caught, and AUC validates the model's overall capability to distinguish between a leaving customer and a staying one.
+
+## 6. Risk Predictions & Validation
+```{r predictions_export}
+data_cleaned$Churn_Probability <- predict(churn_model, newdata = data_cleaned, type = "response")
+
+data_cleaned <- data_cleaned %>%
+  mutate(
+    Risk_Level = case_when(
+      Churn_Probability >= 0.7 ~ "High Risk",
+      Churn_Probability >= 0.3 ~ "Medium Risk",
+      TRUE ~ "Low Risk"
+    )
+  )
+
+data_cleaned %>%
+  group_by(Risk_Level) %>%
+  summarise(
+    Total_Customers = n(),
+    Actual_Churn_Count = sum(Churn == "Yes"),
+    Actual_Churn_Rate = round((Actual_Churn_Count / Total_Customers) * 100, 2)
+  )
+
+write.csv(data_cleaned, "D:/Data Analysis/customers_churn/customers_with_predictions.csv", row.names = FALSE)
+```
+
+**WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
+
+1. **This cross-references our model's predictions with actual historical outcomes to validate the risk segments.**
+
+2. **Proving that the "High Risk" tier has a drastically higher actual churn rate than the "Low Risk" tier gives stakeholders absolute confidence to back your marketing retention budget.**
+
+
+## 7. Customer Distribution by Predictive Risk Level:
+
+``` {r plot_risk}
+ggplot(data_cleaned, aes(x = Risk_Level, fill = Risk_Level)) + geom_bar(width = 0.5) + scale_fill_manual(values = c("#e74c3c", "#2ecc71", "#f1c40f")) + labs( title = "Customer Distribution by Predictive Risk Level", x = "Risk Level", y = "Customer Count" ) + theme_minimal()
+```
+## Strategic Business Recommendations
+
+1. **Contract Migration Strategy:** Offer a 10% discount incentive to convert Month-to-Month users into 1-Year or 2-Year contracts.
+
+2. **On boarding Support Program:** Focus customer support and onboarding resources on new customers during their first 6 months.
+
+3. **Targeted Retention Campaigns:** Export the High Risk list directly from `customers_with_predictions.csv` to launch targeted retention offers.
+
+

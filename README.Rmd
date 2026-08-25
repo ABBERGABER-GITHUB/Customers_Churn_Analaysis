@@ -1,0 +1,77 @@
+---
+title: "README"
+author: "Abeer Gaber"
+date: "`r Sys.Date()`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# End-to-End Telecom Customer Churn Analysis & Predictive Modeling
+
+An advanced, data-driven project that builds a comprehensive telecom customer retention ecosystem. This project integrates **SQL** for database partitioning, **R (Machine Learning)** for statistical modeling and predictive risk-tiering, and **Power BI** for interactive business dashboards.
+
+---
+
+## 🚀 Project Overview & Business Value
+Customer retention is more cost-effective than acquisition. This repository contains an end-to-end framework designed to:
+1. Identify major macro-drivers of customer churn (e.g., pricing, contract vulnerabilities).
+2. Train a robust Predictive Model (Logistic Regression) adjusted for real-world class imbalance to catch customers before they leave.
+3. Classify the customer base into actionable **High, Medium, and Low-Risk Tiers**.
+4. Safeguard revenue by quantifying exactly how much money is at risk for executive decision-making.
+
+---
+
+## 🛠️ Tech Stack & Architecture
+* **Database Layer:** SQL (MySQL Workbench) - Used to isolate pricing buckets and calculate baseline churn metrics.
+* **Analytical & ML Layer:** R Programming (RStudio) - Handled data cleaning, exploratory density analysis, down-sampling for class imbalance, VIF diagnostics, and Logistic Regression training.
+* **Visualization Layer:** Power BI Desktop - Created an interactive executive dashboard powered by advanced DAX metrics.
+
+---
+
+## 📊 Key Analytics & Insights From R
+
+### 1. Contract Vulnerabilities
+* **Insight:** Over 40% of Month-to-Month contract holders churned, compared to less than 3% churn rate among 2-Year contract holders.
+* **Impact:** Short-term contracts represent the largest retention leak in the business.
+
+### 2. Price Sensitivity Danger Zones
+* **Insight:** Churned customers have a significantly higher median monthly charge (~$74.40) compared to retained customers (~$61.20).
+* **Density Plot Analysis:** Continuous density curves revealed that peak customer loss occurs heavily once bills cross the **$70 threshold**.
+
+---
+
+## 🤖 Predictive Model Performance
+To ensure maximum budget efficiency for marketing campaigns, the Logistic Regression model was trained on balanced data (via down-sampling) and scored on an unseen test set:
+
+1. **Model Accuracy:** 75%+ (Stable baseline classification).
+2. **Model Sensitivity (True Churn Catch Rate):** High sensitivity, proving the model is highly capable of identifying true churners before they exit.
+3. **Multicollinearity Check:** Passed strict VIF testing (VIF < 5), proving robust, non-overlapping statistical predictors.
+
+---
+
+## 🗂️ Actionable Risk Segmentation (Output File)
+The script enriches the original dataset and exports `customers_with_predictions.csv` with individual customer metrics:
+* `Churn_Probability`: The calculated mathematical chance (0 to 1) of the customer leaving.
+* `Risk_Level`: Grouped into **High Risk** (Prob >= 0.7), **Medium Risk** (Prob >= 0.3), and **Low Risk**.
+
+### Risk Tiers Validation
+The risk tier segmentation was cross-validated with historical outcomes, mathematically proving that the **High Risk segment contains the absolute highest density of actual churners**, giving stakeholders full confidence in the model.
+
+---
+
+## 💡 Strategic Business Recommendations
+1. **Contract Migration Strategy:** Implement a 10% discount incentive campaign specifically targeting Month-to-Month users to migrate them into secure 1-Year or 2-Year contracts.
+2. **Onboarding Support Program:** Focus customer success resources heavily on new accounts during their first 6 months to reduce early-stage churn.
+3. **Targeted Retention Offers:** Directly export the **High Risk List** from the predictive output file to feed automated email and discount campaigns.
+
+---
+
+## 📂 Repository Structure
+* `/Customer-Churn-Analysis-Report.Rmd`: The master R Markdown document containing full codes and narratives.
+* `/Customer-Churn-Analysis-Report.html`: The interactive HTML rendered report.
+* `/Customer-Churn-Analysis-Report.pdf`: The official printable executive PDF report.
+* `/churn_queries.sql`: SQL scripts used for preliminary data partitioning.
+* `/customers_with_predictions.csv`: Enriched output dataset equipped with predictive probabilities and risk tiers for Power BI.

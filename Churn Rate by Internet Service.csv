@@ -1,0 +1,6 @@
+InternetService,TechSupport,total_customers,churned_customers,churn_rate_percentage
+"Fiber optic",No,4460,2202,49.37
+DSL,No,2486,690,27.76
+"Fiber optic",Yes,1732,392,22.63
+DSL,Yes,2356,228,9.68
+No,"No internet service",3052,226,7.40
