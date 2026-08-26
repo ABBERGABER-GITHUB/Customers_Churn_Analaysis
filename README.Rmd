@@ -1,14 +1,3 @@
----
-title: "README"
-author: "Abeer Gaber"
-date: "`r Sys.Date()`"
-output: word_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 # End-to-End Telecom Customer Churn Analysis & Predictive Modeling
 
 An advanced, data-driven project that builds a comprehensive telecom customer retention ecosystem. This project integrates **SQL** for database partitioning, **R (Machine Learning)** for statistical modeling and predictive risk-tiering, and **Power BI** for interactive business dashboards.
@@ -34,44 +23,54 @@ Customer retention is more cost-effective than acquisition. This repository cont
 ## 📊 Key Analytics & Insights From R
 
 ### 1. Contract Vulnerabilities
-* **Insight:** Over 40% of Month-to-Month contract holders churned, compared to less than 3% churn rate among 2-Year contract holders.
-* **Impact:** Short-term contracts represent the largest retention leak in the business.
+* **Insight:** Over 40% of Month-to-Month contract holders churned, compared to less than a 3% churn rate among 2-Year contract holders.
+* **Impact:** Short-term contracts represent the largest retention leak in the business. Monthly subscriptions make it easier to switch providers, while long-term commitments prevent customer migration.
 
-### 2. Price Sensitivity Danger Zones
+### 2. Price Sensitivity & Infrastructure Risk
 * **Insight:** Churned customers have a significantly higher median monthly charge (~$74.40) compared to retained customers (~$61.20).
 * **Density Plot Analysis:** Continuous density curves revealed that peak customer loss occurs heavily once bills cross the **$70 threshold**.
+* **Service Driver:** Statistical coefficients showed that **Fiber Optic Internet service** significantly drives churn (+0.93 log-odds), indicating potential service quality or pricing mismatch issues.
 
 ---
 
-## 🤖 Predictive Model Performance
-To ensure maximum budget efficiency for marketing campaigns, the Logistic Regression model was trained on balanced data (via down-sampling) and scored on an unseen test set:
+## 🤖 Predictive Model Performance & Diagnostics
+To ensure maximum budget efficiency for marketing campaigns, the Logistic Regression model was trained on balanced data (via down-sampling) and scored on an unseen 20% test dataset:
 
-1. **Model Accuracy:** 75%+ (Stable baseline classification).
-2. **Model Sensitivity (True Churn Catch Rate):** High sensitivity, proving the model is highly capable of identifying true churners before they exit.
-3. **Multicollinearity Check:** Passed strict VIF testing (VIF < 5), proving robust, non-overlapping statistical predictors.
+* **Model Accuracy (73.28%):** Proves a stable baseline capability to make correct predictions across all customer groups.
+* **Model Sensitivity / True Churn Catch Rate (79.62%):** Out of every 100 actual churners, the model successfully flags **~80 of them** before they exit, allowing for proactive intervention.
+* **Area Under Curve - AUC (0.83):** Indicates excellent discriminatory power, meaning an 83% probability of correctly ranking a true churner with a higher risk score than a loyal customer.
+* **Multicollinearity Check (VIF = 1.34):** Passed strict VIF testing (VIF < 5) for `tenure` and `MonthlyCharges`, confirming stable and reliable statistical predictors with zero data redundancy.
 
 ---
 
-## 🗂️ Actionable Risk Segmentation (Output File)
-The script enriches the original dataset and exports `customers_with_predictions.csv` with individual customer metrics:
-* `Churn_Probability`: The calculated mathematical chance (0 to 1) of the customer leaving.
-* `Risk_Level`: Grouped into **High Risk** (Prob >= 0.7), **Medium Risk** (Prob >= 0.3), and **Low Risk**.
+## 🗂️ Actionable Risk Segmentation & Empirical Validation
+The script enriches the dataset by stratifying customers into actionable commercial tiers based on mathematical probabilities:
+* **High Risk:** Probability >= 0.6
+* **Medium Risk:** Probability >= 0.3 and < 0.6
+* **Low Risk:** Probability < 0.3
 
-### Risk Tiers Validation
-The risk tier segmentation was cross-validated with historical outcomes, mathematically proving that the **High Risk segment contains the absolute highest density of actual churners**, giving stakeholders full confidence in the model.
+### Real-World Validation Table
+When cross-validated against historical test outcomes, the model's risk stratification proved highly reliable:
+
+| Risk_Level | Total_Customers | Actual_Churn_Count | Actual_Churn_Rate (%) |
+| :--- | :---: | :---: | :---: |
+| **High Risk** | 1,616 | 996 | **61.63%** |
+| **Medium Risk** | 2,597 | 743 | **28.61%** |
+| **Low Risk** | 2,830 | 130 | **4.59%** |
+
+* **Validation Takeaway:** The High-Risk segment contains the absolute highest density of actual churners (61.63%), while the Low-Risk segment remains highly stable (only 4.59% churn). This gives management full confidence to execute targeted budgets without wasting capital on false alarms.
 
 ---
 
 ## 💡 Strategic Business Recommendations
-1. **Contract Migration Strategy:** Implement a 10% discount incentive campaign specifically targeting Month-to-Month users to migrate them into secure 1-Year or 2-Year contracts.
-2. **Onboarding Support Program:** Focus customer success resources heavily on new accounts during their first 6 months to reduce early-stage churn.
-3. **Targeted Retention Offers:** Directly export the **High Risk List** from the predictive output file to feed automated email and discount campaigns.
+1. **Contract Migration Campaigns:** Launch target incentives (e.g., small loyalty discounts) to migrate Month-to-Month users into secure 1-Year or 2-Year contracts, directly neutralizing the highest churn driver.
+2. **Technical & Pricing Audit on Fiber Optic:** Task the engineering and product teams to investigate technical stability and pricing strategies for Fiber Optic users, as this segment currently pushes customers away.
+3. **Automate High-Risk Workflows:** Feed the **High Risk List** directly into automated CRM marketing funnels to deliver immediate retention offers, while completely suppressing "Low Risk" accounts from unnecessary discounts to protect profit margins.
 
 ---
 
 ## 📂 Repository Structure
-* `/Customer-Churn-Analysis-Report.Rmd`: The master R Markdown document containing full codes and narratives.
+* `/Customer-Churn-Analysis-Report.Rmd`: The master R Markdown document containing full codes, spacing, and narrative analysis.
 * `/Customer-Churn-Analysis-Report.html`: The interactive HTML rendered report.
-* `/Customer-Churn-Analysis-Report.pdf`: The official printable executive PDF report.
 * `/churn_queries.sql`: SQL scripts used for preliminary data partitioning.
-* `/customers_with_predictions.csv`: Enriched output dataset equipped with predictive probabilities and risk tiers for Power BI.
+* `/customers_with_predictions.csv`: Enriched output dataset equipped with predictive probabilities and risk tiers for Power BI integration.
