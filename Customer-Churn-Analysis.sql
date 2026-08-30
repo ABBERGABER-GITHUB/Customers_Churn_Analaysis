@@ -1,5 +1,42 @@
+CREATE DATABASE churn_db;
+
+
 use churn_db;
-SELECT * FROM customerID LIMIT 10;
+CREATE TABLE customers_temp (
+    customerID VARCHAR(255) PRIMARY KEY,
+    gender VARCHAR(255),
+    SeniorCitizen INT,
+    Partner VARCHAR(255),
+    Dependents VARCHAR(255),
+    tenure INT,
+    PhoneService VARCHAR(255),
+    MultipleLines VARCHAR(255),
+    InternetService VARCHAR(255),
+    OnlineSecurity VARCHAR(255),
+    OnlineBackup VARCHAR(255),
+    DeviceProtection VARCHAR(255),
+    TechSupport VARCHAR(255),
+    StreamingTV VARCHAR(255),
+    StreamingMovies VARCHAR(255),
+    Contract VARCHAR(255),
+    PaperlessBilling VARCHAR(255),
+    PaymentMethod VARCHAR(255),
+    MonthlyCharges DECIMAL(10, 2),
+    TotalCharges DECIMAL(10, 2),
+    Churn VARCHAR(255),
+    Churn_Numeric INT,
+    Churn_Probability DECIMAL(5, 4),
+    Risk_Level VARCHAR(255)
+);
+
+
+RENAME TABLE customers_temp TO customers_data;
+
+CREATE OR REPLACE VIEW customers_data AS 
+SELECT * FROM customers_temp;
+
+SELECT * FROM customers_churn LIMIT 10;
+
 
 -- 1. Data Exploration
 -- Total customers count
@@ -8,7 +45,7 @@ FROM customers_data;
 
 -- View first 10 rows
 SELECT * 
-FROM customers_data 
+FROM customers_data
 LIMIT 10;
 
 
