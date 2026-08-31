@@ -68,7 +68,11 @@ This visual computes the proportional churn rate across different contract types
 
 **Conclusion:** 
 The 1-year and 2-year contracts have more loyal customers than the month-to-month customers due to these reasons:
+
+
 1. Long-term contracts usually offer more discounts compared to monthly payments.
+
+
 2. Monthly subscriptions make it much easier to change providers, whereas long-term contracts lock customers in so they avoid losing their upfront or subscription commitment.
 
 <br>
@@ -90,6 +94,8 @@ It helps detect if price sensitivity exists by showing if lost customers were pa
 
 **Conclusion:**
 1. Customers tend to churn if they find another competitor providing the same service at lower fees.
+
+
 2. The current service does not provide enough unique value to differentiate it from competitors, making it easy to lose customers over price.
 
 <br>
@@ -151,9 +157,15 @@ In real-world business data, loyal customers heavily outnumber churners. This da
 * **Data Splitting:** The dataset is cleanly divided into 80% for training and 20% for testing. `set.seed(123)` is used to ensure perfect reproducibility.
 * **Handling Class Imbalance (Down-Sampling):** `downSample` was applied to balance the training classes, preventing majority class bias.
 
-**Business Recommendation for the Client:** 
+**Business Recommendation for the Client:**
+
+
 1. **Do not skip this balancing step:** Without this fix, the AI model would simply guess "No Churn" for the vast majority of customers and artificially look 90% accurate while failing to save anyone.
+
+
 2. **Targeted Retention Budget:** By balancing the data, your marketing and customer care teams can focus their restricted retention budget on saving actual high-risk customers, rather than wasting capital on already loyal ones.
+
+
 3. **Monitor Key Features:** Pay close attention to Contract types and Monthly Charges, as the model relies heavily on these specific factors to flag churning behavior.
 
 ## 5. Predictive Modeling & Statistical Diagnostics
@@ -192,12 +204,19 @@ cat("Area Under Curve (AUC):", round(auc(roc_curve), 2), "n")
 **WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
 This section tests our trained model on completely unseen data (the 20% test partition). It scores the model's accuracy and reliability before utilizing it in production.
 
+
 **Key Performance Metrics Explained:**
+
+
 * **Model Accuracy (73.28%):** The overall correct prediction rate across the entire test dataset.
+
+
 * **Model Sensitivity (79.62%):** This is the **True Churn Catch Rate**. Out of every 100 actual churners, our model successfully detects **80 of them** before they completely terminate their contracts.
+
+
 * **Area Under Curve - AUC (0.83):** Indicates excellent performance, proving an **83% probability** that the model will correctly rank a true churner with a higher risk score than a loyal customer.
 
-<br>
+
 
 ### <u>7. Risk Stratification & Targeted Business Strategy</u>
 
@@ -228,57 +247,48 @@ print(risk_summary)
 
 This table groups the customers into actionable tiers (High, Medium, and Low Risk) based on the model's predictions. It verifies performance by comparing predicted risk tiers against what the customers actually did.
 
-<br>
 
 **Strategic Insights for the Business:**
 
 * **High-Risk Tier (61.63% Actual Churn):** The model captured 1,616 customers where over **61% actually churned**. This confirms the alert system is highly trustworthy and requires immediate automated marketing intervention.
 
-<br>
 
 * **Medium-Risk Tier (28.61% Actual Churn):** A crucial window of 2,597 customers. They are currently on the fence and can be easily saved with proactive support or relationship management check-ins.
 
-<br>
 
 * **Low-Risk Tier (4.59% Actual Churn):** Proves that customers flagged as safe are indeed stable. Only a tiny fraction left.
 
-<br>
 
 **Final Corporate Recommendations:**
 
 1. **Automate High-Risk Workflows:** Trigger automated marketing incentives or discounted long-term contract offers to this high-risk group.
 
-<br>
 
 2. **Optimize Operational Budget:** Completely suppress the "Low Risk" customers from receiving unnecessary retention discounts, saving company resources.
 
-<br>
 ---
 
 **WHAT THIS ANALYSIS DOES & WHY IT MATTERS:**
 
 This outputs the mathematical coefficients, log-odds, and p-values for each feature to pinpoint the exact root causes of churn.
 
-<br>
 
 ### 📈 Business Insights & Actionable Takeaways:
 
-<br>
 
 **🚨 Critical Risk Factors (What drives customers to leave?)**
 
 * **Fiber Optic Internet Issues:** Customers with Fiber Optic service have the highest risk of churning (Coefficient: +0.93). The technical or product pricing team must immediately investigate if there are service drops or pricing dissatisfaction with this specific plan.
 
-<br>
 
 **🛡️ Strongest Retention Shields (What keeps customers loyal?)**
 
 * **Long-Term Contracts:** Moving customers from Month-to-Month to a 1-Year or 2-Year Contract drastically reduces churn risk (Coefficients: -0.85 and -1.70 respectively). Long contracts are your most powerful tool to lock in loyalty.
 
-<br>
+
 
 * **Customer Tenure:** The longer a customer stays (tenure), the less likely they are to leave. Early-stage customers (new sign-ups) are at a higher risk and require dedicated onboarding care.
 
-<br>
+
 
 * **Technical Support:** Customers utilizing Tech Support are significantly less likely to churn (Coefficient: -0.38), confirming that technical intervention successfully mitigates customer friction.
